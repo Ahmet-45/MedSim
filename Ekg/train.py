@@ -4,9 +4,9 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.utils.data as data
-from model import Model
-import dataset 
-from dataset import X_train, y_train, X_test, y_test, dataMed,seq_length,train_size
+from Ekg.model import Model
+import Ekg.dataset as dataset 
+from Ekg.dataset import X_train, y_train, X_test, y_test, dataMed,seq_length,train_size
 
 modelT = Model()
 optimizer = optim.Adam(modelT.parameters()) # Adam optimizasyon algoritması kullanılır.

@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 satir_basina_deger = 2000
 toplam_deger = 10000
 satir_sayisi = int(np.ceil(toplam_deger/satir_basina_deger))
-df = pd.read_csv('C:/Users/FURKAN KORKAT/Downloads/106_ekg.csv')
+df = pd.read_csv('106_ekg.csv')
 df_cleaned = df.drop(columns=[ 'time' , 'V1' , 'symbol' ])  # fazla verileri kaldır
 dataMed = df[["MLII"]].values.astype('float32')
 df_cleaned.head(n=10000)

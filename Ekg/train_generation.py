@@ -4,10 +4,10 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.utils.data as data
-import model
-from model import Model as LSTMModel
-import dataset 
-from dataset import X_train, y_train, X_test, y_test, dataMed,seq_length,train_size
+import Ekg.model as model
+from Ekg.model import Model as LSTMModel
+import Ekg.dataset as dataset 
+from Ekg.dataset import X_train, y_train, X_test, y_test, dataMed,seq_length,train_size
 
 def generate_autoregressive(model, start_sequence, generation_length ,seq_length):
     model.eval()  # Değerlendirme moduna geçirme

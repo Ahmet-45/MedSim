@@ -1,4 +1,4 @@
-import dataset
+import Ekg.dataset as dataset
 import torch.nn as nn
 class Model(nn.Module): # model sınıfı nn.Module sınıfından türetilir.
     def __init__(self):
