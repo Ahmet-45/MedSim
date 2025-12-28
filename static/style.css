@@ -1,0 +1,150 @@
+/* FONTLAR VE GENEL AYARLAR */
+body {
+    background-color: #eef2f6; /* Arka plan açık gri-mavi */
+    font-family: 'Poppins', sans-serif;
+    height: 100vh;
+    margin: 0;
+    overflow: hidden; /* Sayfa kaymasın */
+}
+
+/* ANA KART YAPISI */
+.main-card {
+    display: flex;
+    width: 92%;
+    max-width: 1400px;
+    height: 88vh;
+    background-color: #ffffff;
+    border-radius: 24px;
+    overflow: hidden;
+    border: 1px solid #e0e0e0;
+}
+
+/* SOL PANEL (SIDEBAR) */
+.sidebar {
+    width: 300px;
+    background-color: #ffffff;
+    border-right: 1px solid #f0f0f0;
+}
+
+/* LOGO AYARI */
+.sidebar-logo {
+    max-width: 85%; /* Logonun genişliği */
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.1)); /* Hafif gölge */
+}
+
+/*  BUTON */
+.btn-modern {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* Mor-Mavi Gradyan */
+    color: white;
+    border: none;
+    border-radius: 16px;
+    font-weight: 600;
+    font-size: 1.05rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(118, 75, 162, 0.3);
+}
+
+.btn-modern:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(118, 75, 162, 0.4);
+    color: white;
+}
+
+/* SAĞ PANEL (CHAT) */
+.chat-section {
+    flex: 1;
+    background-color: #fff;
+}
+
+/* SOHBET KUTUSU  */
+#sohbet-kutusu {
+    background-color: #fdfbf7; /* KREM RENGİ */
+    background-image: radial-gradient(#e8e4dc 1px, transparent 1px);
+    background-size: 24px 24px; /* Hafif nokta dokusu */
+    scroll-behavior: smooth;
+}
+
+/* MESAJ BALONLARI */
+.mesaj {
+    max-width: 80%;
+    padding: 18px 24px;
+    border-radius: 18px;
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    animation: slideUp 0.3s ease;
+}
+
+/* Doktor (Sistem) Mesajı - Tabloyu içeren */
+.mesaj.doktor {
+    background-color: #ffffff;
+    color: #444;
+    border: 1px solid #f0eee8;
+    border-top-left-radius: 4px;
+}
+
+/* Kullanıcı Mesajı */
+.mesaj.kullanici {
+    background-color: #4a90e2; /* Mavi */
+    color: white;
+    margin-left: auto;
+    border-top-right-radius: 4px;
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+}
+
+/* TABLO TASARIMI */
+.table-responsive {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.custom-table th {
+    background-color: #f8f9fa;
+    color: #6c757d;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.85rem;
+    border-bottom: 2px solid #e9ecef;
+    padding: 12px;
+}
+
+.custom-table td {
+    vertical-align: middle;
+    color: #333;
+    font-size: 0.95rem;
+    padding: 12px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+/* Değer Renklendirmeleri (Kırmızı) */
+.deger-dusuk, .deger-yuksek {
+    color: #e74c3c !important;  /*  Kesinlikle bu renk olsun */
+    background-color: #fdecec !important; /* Arka plan da kesin olsun */
+    font-weight: 700;
+    border-radius: 6px;
+    padding: 4px 10px;
+    display: inline-block;
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #fdfbf7;
+}
+::-webkit-scrollbar-thumb {
+    background: #d1d1d1;
+    border-radius: 4px;
+    border: 2px solid #fdfbf7;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
