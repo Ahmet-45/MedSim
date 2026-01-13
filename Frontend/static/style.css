@@ -59,12 +59,20 @@ body {
     background-color: #fff;
 }
 
-/* SOHBET KUTUSU  */
+/* SOHBET KUTUSU */
 #sohbet-kutusu {
     background-color: #fdfbf7; /* KREM RENGİ */
     background-image: radial-gradient(#e8e4dc 1px, transparent 1px);
     background-size: 24px 24px; /* Hafif nokta dokusu */
+    
+    /* --- EKLENEN KRİTİK AYARLAR --- */
+    overflow-y: auto;  /* Kaydırma çubuğunu açar */
+    flex: 1;           /* Alanı doldurur */
+    height: 100%;      /* Yüksekliği garantiye alır */
+    /* ------------------------------ */
+
     scroll-behavior: smooth;
+    padding: 30px; /* İçerik kenarlara yapışmasın */
 }
 
 /* MESAJ BALONLARI */
@@ -147,4 +155,59 @@ body {
 @keyframes slideUp {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
+}
+
+/* 1. Sohbet Alanını Düzenle */
+.chat-section {
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* Yükseklik garanti olsun */
+    overflow: hidden; /* Dışarı taşmayı engelle */
+}
+
+/* 2. Orta Kısım (Mesajlar) */
+#sohbet-kutusu {
+    flex: 1; /* Boşluğu doldur */
+    overflow-y: auto; /* Kaydırma çubuğu çıksın */
+    padding: 30px;
+    height: 100%;
+}
+
+/* 3. Alt Kısım (Yazı Yazma Yeri - BURASI KAYBOLUYORDU) */
+.input-area {
+    background: white;
+    padding: 20px 30px;
+    border-top: 1px solid #f0f0f0;
+    display: flex;
+    gap: 15px;
+    
+    /* İŞTE SİHİRLİ KODLAR: */
+    flex-shrink: 0; /* Asla küçülme! */
+    position: relative;
+    z-index: 10;
+}
+
+/* Input ve Buton Stilleri (Senin tasarımın) */
+.custom-input {
+    flex: 1;
+    padding: 15px 20px;
+    border: 2px solid #f0f0f0;
+    border-radius: 16px;
+    outline: none;
+    font-family: 'Poppins', sans-serif;
+    transition: 0.3s;
+}
+
+.btn-send {
+    width: 60px;
+    height: 55px;
+    border-radius: 16px;
+    background: #667eea;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }

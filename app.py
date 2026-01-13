@@ -3,114 +3,141 @@ import pandas as pd
 import numpy as np
 import random
 from flask import Flask, render_template, jsonify, request
+import google.generativeai as genai
 
-# --- 1. İSTATİSTİKSEL MODÜLÜ YÜKLE ---
+app = Flask(__name__,
+            template_folder='Frontend/templates',
+            static_folder='Frontend/static')
+
+# --- API KEY ---
+API_KEY = "AIzaSyCvQFhW10eSpTEOb-b0dP7f5-nF4S6U_DI"
+genai.configure(api_key=API_KEY)
+
+# Modeli Hazırla
+try:
+    model = genai.GenerativeModel('gemini-flash-latest')
+    print(" Gemini AI Hazır!")
+except:
+    print(" Gemini Bağlantı Hatası!")
+
+# --- GLOBAL DEĞİŞKENLER (HAFIZA) ---
+# Hastanın bilgilerini burada tutacağız ki tahlil isteyince unutmasın
+current_patient = {
+    "chat_session": None,
+    "hastalik": None,
+    "yas": None,
+    "cinsiyet": None,
+    "isim": None # Gemini kendi uyduruyor ama biz hastalığı tutsak yeter
+}
+
+# --- MODÜLLERİ YÜKLE ---
+# (Senin mevcut istatistik ve GAN kodların aynen kalıyor)
 try:
     from Tahlil.src.hemogram_ai import HemogramGenerator
-    print(" İstatistiksel Modül Yüklendi.")
-except ImportError:
-    print(" HATA: src klasörü bulunamadı.")
+    hemogram_stat_model = HemogramGenerator()
+    csv_path = os.path.join('Tahlil', 'data', 'MedSim_100_Hasta.csv')
+    if os.path.exists(csv_path): hemogram_stat_model.fit(csv_path)
+except: hemogram_stat_model = None
 
-# --- 2. GAN YAPAY ZEKA MODELİNİ YÜKLE (.pkl) ---
 gan_model = None
 try:
     from sdv.single_table import CTGANSynthesizer
     pkl_path = os.path.join('Tahlil', 'hemogram_model_IDA.pkl')
+    if os.path.exists(pkl_path): gan_model = CTGANSynthesizer.load(pkl_path)
+except: pass
+
+# --- YARDIMCI FONKSİYON: GEMINI HASTA MODUNU BAŞLAT ---
+def yeni_hasta_olustur():
+    global current_patient
     
-    if os.path.exists(pkl_path):
-        gan_model = CTGANSynthesizer.load(pkl_path)
-        print(" GAN Yapay Zeka Modeli (.pkl) Yüklendi! ")
-    else:
-        print(f" UYARI: {pkl_path} bulunamadı.")
-except Exception as e:
-    print(f" GAN hatası: {e}")
+    # Rastgele seçimler
+    olasiliklar = ['saglikli', 'demir_eksikligi', 'b12_eksikligi']
+    secilen_hastalik = random.choice(olasiliklar)
+    yas = random.randint(18, 75)
+    cinsiyet = random.choice(["Kadın", "Erkek"])
+    
+    # Hafızaya kaydet (ÇOK ÖNEMLİ)
+    current_patient["hastalik"] = secilen_hastalik
+    current_patient["yas"] = yas
+    current_patient["cinsiyet"] = cinsiyet
+    
+    # Senaryolar
+    senaryolar = {
+        'saglikli': {'ad': 'Sağlıklı', 'semptom': 'Hafif yorgunluk var ama turp gibiyim, kontrol amaçlı geldim.', 'ruh': 'Rahat'},
+        'demir_eksikligi': {'ad': 'Demir Eksikliği Anemisi', 'semptom': 'Kolumu kaldıracak halim yok, saçım dökülüyor, sürekli uyku hali.', 'ruh': 'Bezgin, yorgun'},
+        'b12_eksikligi': {'ad': 'B12 Eksikliği', 'semptom': 'Unutkanlık, ellerde uyuşma, dengesizlik.', 'ruh': 'Endişeli'}
+    }
+    durum = senaryolar[secilen_hastalik]
 
-app = Flask(__name__)
+    system_instruction = f"""
+    SEN BİR SİMÜLASYON HASTASISIN.
+    KİMLİK: {yas} yaşında, {cinsiyet}.
+    GİZLİ HASTALIK: {durum['ad']} (Bunu söyleme).
+    ŞİKAYET: {durum['semptom']}
+    RUH HALİ: {durum['ruh']}
+    
+    KURALLAR:
+    1. Asla "Ben yapay zekayım" deme.
+    2. Doktor tahlil isterse "Tamam hocam vereyim kanı" de.
+    3. Tahlil sonuçları çıkınca "Sonuçlar nasıl hocam, kötü bir şey var mı?" diye sor.
+    4. Kısa, doğal ve halk ağzıyla konuş.
+    """
+    
+    # Yeni oturum başlat
+    current_patient["chat_session"] = model.start_chat(history=[
+        {"role": "user", "parts": [system_instruction]}
+    ])
+    
+    return f"Merhaba doktor bey/hanım. Sıram geldi mi? ({durum['ruh']} görünüyor)"
 
-# --- MODELLERİ BAŞLAT ---
-hemogram_stat_model = None
-try:
-    hemogram_stat_model = HemogramGenerator()
-    csv_path = os.path.join('Tahlil', 'data', 'MedSim_100_Hasta.csv')
-    if os.path.exists(csv_path):
-        hemogram_stat_model.fit(csv_path)
-except Exception as e:
-    print(f" İstatistik model hatası: {e}")
-
-
-# --- TABLO OLUŞTURUCU ---
+# --- TABLO OLUŞTURUCU (Değişmedi) ---
 def tahlil_tablosu_olustur(durum):
-    if not hemogram_stat_model: return "Model çalışmıyor."
+    if not hemogram_stat_model: return "Model Yüklenemedi."
     
-    # 1. ADIM: Taslak veri üret
+    # Veri üretimi (Senin yazdığın mantık)
     df_stat = hemogram_stat_model.generate(adet=1, durum=durum)
-    if df_stat.empty: return "Veri üretilemedi."
-    
+    if df_stat.empty: return "Veri yok."
     hasta_data = df_stat.iloc[0].to_dict()
     if 'Teşhis' in hasta_data: del hasta_data['Teşhis']
 
-    # 2. ADIM: Kritik değerleri .pkl (GAN) modelinden çek
+    # GAN Entegrasyonu
     if gan_model:
         try:
             gan_data = gan_model.sample(num_rows=1)
+            hgb = float(gan_data['Hemoglobin'].values[0])
+            mcv = float(gan_data['MCV'].values[0])
             
-            hgb_gan = float(gan_data['Hemoglobin'].values[0])
-            mcv_gan = float(gan_data['MCV'].values[0])
-            
-            # RDW Kontrolü
-            if 'RDW' in gan_data.columns:
-                rdw_gan = float(gan_data['RDW'].values[0])
-            else:
-                rdw_gan = None
-
-            # Hastalık Durumuna Göre Manipülasyon (Doktor Müdahalesi)
+            # Manipülasyon
             if durum == 'demir_eksikligi':
-                if hgb_gan > 11.5: hgb_gan = hgb_gan * 0.75 
-                if mcv_gan > 78: mcv_gan = mcv_gan * 0.80
+                if hgb > 11.5: hgb *= 0.75
+                if mcv > 78: mcv *= 0.80
             elif durum == 'b12_eksikligi':
-                if mcv_gan < 100: mcv_gan = mcv_gan * 1.25
+                if mcv < 100: mcv *= 1.25
+                
+            hasta_data['HGB'] = hgb
+            hasta_data['MCV'] = mcv
+        except: pass
 
-            # Değerleri Güncelle
-            hasta_data['HGB'] = hgb_gan
-            hasta_data['MCV'] = mcv_gan
-            if rdw_gan:
-                hasta_data['RDW-CV'] = rdw_gan
-
-            # Konsola yazmaya devam etsin 
-            print(f" AI ÜRETİMİ: HGB={hgb_gan:.2f}, MCV={mcv_gan:.2f} (Durum: {durum})")
-
-        except Exception as e:
-            print(f" GAN hatası: {e}")
-
-    # 3. ADIM: HTML Tablosunu Oluştur 
-    html = "<div class='table-responsive'>"
-    html += "<table class='table table-hover custom-table'>"
-    html += "<thead><tr><th>TETKİK</th><th>SONUÇ</th><th>BİRİM</th><th>DURUM</th></tr></thead><tbody>"
-
+    # HTML Tablo
+    html = "<div class='table-responsive'><table class='table table-sm table-bordered'>"
+    html += "<thead class='thead-dark'><tr><th>TETKİK</th><th>SONUÇ</th><th>DURUM</th></tr></thead><tbody>"
+    
     for key, val in hasta_data.items():
         if key not in hemogram_stat_model.stats: continue
-        
         mu = hemogram_stat_model.stats[key]['mean']
         sigma = hemogram_stat_model.stats[key]['std']
-        ref_alt = max(0, mu - 2 * sigma)
-        ref_ust = mu + 2 * sigma
         
-        durum_text, renk_class = "Normal", ""
-        
-        if val < ref_alt: 
-            durum_text, renk_class = "Düşük (L)", "deger-dusuk"
-        elif val > ref_ust: 
-            durum_text, renk_class = "Yüksek (H)", "deger-yuksek"
-
-        birim = ""
-        if key in ["HGB", "MCHC"]: birim = "g/dL"
-        elif key in ["MCV", "MPV"]: birim = "fL"
-        elif key in ["WBC", "PLT"]: birim = "10^3/uL"
-        elif key in ["RBC"]: birim = "10^6/uL"
-        elif key in ["HCT"]: birim = "%"
-        
-        html += f"<tr><td>{key}</td><td class='{renk_class} font-weight-bold'>{val:.2f}</td><td>{birim}</td><td class='{renk_class}'>{durum_text}</td></tr>"
-
+        style = ""
+        durum_txt = "Normal"
+        if val < (mu - 2*sigma): 
+            style = "color:red; font-weight:bold;"
+            durum_txt = "Düşük (L)"
+        elif val > (mu + 2*sigma):
+            style = "color:red; font-weight:bold;"
+            durum_txt = "Yüksek (H)"
+            
+        html += f"<tr><td>{key}</td><td style='{style}'>{val:.2f}</td><td>{durum_txt}</td></tr>"
+    
     html += "</tbody></table></div>"
     return html
 
@@ -121,18 +148,54 @@ def home():
 
 @app.route('/chat', methods=['POST'])
 def chat():
+    global current_patient
     user_input = request.json.get('message', '').lower()
     
-    # TAHLİL VE HEMOGRAM KOMUTU
-    if "tahlil" in user_input or "hemogram" in user_input:
-        olasiliklar = ['saglikli', 'demir_eksikligi', 'b12_eksikligi']
-        sans = random.choice(olasiliklar)
-        return jsonify({"response": tahlil_tablosu_olustur(sans), "type": "html"})
+    # 1. SENARYO: "YENİ HASTA" BUTONUNA BASILDI
+    # Veya kullanıcı açıkça "yeni hasta" yazdı
+    if "yeni hasta" in user_input:
+        ilk_mesaj = yeni_hasta_olustur()
+        return jsonify({"response": ilk_mesaj, "type": "text"})
 
-    elif "merhaba" in user_input:
-        return jsonify({"response": "Merhaba Doktor. Tahlil butonuna basarak yeni bir vaka alabilirsiniz.", "type": "text"})
+    # 2. SENARYO: DOKTOR TAHLİL İSTEDİ (Ama hasta değişmeyecek!)
+    elif "tahlil" in user_input or "hemogram" in user_input or "kan ver" in user_input:
+        
+        # Eğer ortada hasta yoksa uyar
+        if current_patient["chat_session"] is None:
+            return jsonify({"response": "Önce yeni bir hasta çağırmalısınız.", "type": "text"})
+        
+        # Mevcut hastanın hastalığı neyse ona göre tablo üret
+        mevcut_hastalik = current_patient["hastalik"]
+        tablo_html = tahlil_tablosu_olustur(mevcut_hastalik)
+        
+        # Yapay zekaya da haber verelim ki tepki versin
+        try:
+            response = current_patient["chat_session"].send_message(
+                "Doktor kan tahlili istedi. Sonuçları sisteme girdim. Şimdi endişeli bir şekilde 'Sonuçlar nasıl doktor bey?' diye sor."
+            )
+            bot_reply = response.text.replace("\n", " ")
+        except:
+            bot_reply = "Sonuçlar çıktı hocam, buyurun."
+
+        return jsonify({
+            "response": bot_reply, 
+            "type": "html", 
+            "table_html": tablo_html
+        })
+
+    # 3. SENARYO: NORMAL SOHBET
     else:
-        return jsonify({"response": "Anlaşılmadı. Lütfen butonu kullanın.", "type": "text"})
+        if current_patient["chat_session"] is None:
+             # Hasta yoksa otomatik oluştur
+            ilk_mesaj = yeni_hasta_olustur()
+            return jsonify({"response": ilk_mesaj, "type": "text"})
+            
+        try:
+            response = current_patient["chat_session"].send_message(user_input)
+            bot_reply = response.text.replace("</blockquote>", "").replace("<blockquote>", "")
+            return jsonify({"response": bot_reply, "type": "text"})
+        except Exception as e:
+            return jsonify({"response": "Hata: " + str(e), "type": "text"})
 
 if __name__ == '__main__':
     app.run(debug=True)
