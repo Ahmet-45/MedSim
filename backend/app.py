@@ -4,13 +4,19 @@ import numpy as np
 import random
 from flask import Flask, render_template, jsonify, request
 import google.generativeai as genai
+from dotenv import load_dotenv
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+FRONTEND_DIR = os.path.join(BASE_DIR, '..', 'Frontend')
 
 app = Flask(__name__,
-            template_folder='Frontend/templates',
-            static_folder='Frontend/static')
+            template_folder= os.path.join(FRONTEND_DIR, 'templates'),
+            static_folder= os.path.join(FRONTEND_DIR, 'static'))
 
 # --- API KEY ---
-API_KEY = "AIzaSyCvQFhW10eSpTEOb-b0dP7f5-nF4S6U_DI"
+load_dotenv()
+API_KEY = os.getenv("GOOGLE_API_KEY")
 genai.configure(api_key=API_KEY)
 
 # Modeli Hazırla
@@ -88,7 +94,7 @@ def yeni_hasta_olustur():
         {"role": "user", "parts": [system_instruction]}
     ])
     
-    return f"Merhaba doktor bey/hanım. Sıram geldi mi? ({durum['ruh']} görünüyor)"
+    return f"Merhaba doktor bey/hanım. ({durum['ruh']} görünüyor)"
 
 # --- TABLO OLUŞTURUCU (Değişmedi) ---
 def tahlil_tablosu_olustur(durum):
