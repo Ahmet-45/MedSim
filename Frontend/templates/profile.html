@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedSim - Profil Ayarları</title>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body id="profile-page-body">
+
+    <div class="main-card">
+        
+        <div class="sidebar" style="text-align: center;"> <div class="sidebar-avatar-container" style="margin-bottom: 20px; margin-top: 20px;">
+                <img src="{{ url_for('static', filename='ben.jpg') }}" 
+                     alt="Profil" 
+                     style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid #eef2f6;">
+                
+                <h5 style="margin-top: 15px; font-weight: 600; color: #333;">Dr. {{ user.last_name }}</h5>
+                <p style="font-size: 0.85rem; color: #888;">{{ user.email }}</p>
+            </div>
+
+            <hr style="border-top: 1px solid #f0f0f0; margin: 20px 0;">
+
+            <a href="{{ url_for('dashboard') }}" class="btn-modern" style="display: flex; align-items: center; justify-content: center; text-decoration: none; background: #fff; color: #667eea; border: 2px solid #667eea; box-shadow: none; margin-bottom: 15px;">
+                <i class="fas fa-arrow-left" style="margin-right: 10px;"></i> Dashboard'a Dön
+            </a>
+
+            <button class="btn-modern" style="width: 100%; margin-bottom: 10px;">
+                <i class="fas fa-user-cog" style="margin-right: 10px;"></i> Genel Bilgiler
+            </button>
+            <button class="btn-modern" style="width: 100%; margin-bottom: 10px;">
+                <i class="fas fa-chart-line" style="margin-right: 10px;"></i> İstatistikler
+            </button>
+            <button class="btn-modern" style="width: 100%; margin-bottom: 10px;">
+                <i class="fas fa-headset" style="margin-right: 10px;"></i> İletişim - Destek
+            </button>
+            <button class="btn-modern" style="width: 100%; margin-bottom: 10px;">
+                <i class="fas fa-cog" style="margin-right: 10px;"></i> Ayarlar
+            </button>
+
+             </div>
+
+        <div class="chat-section" style="background-color: #fff;">
+            
+            <div style="padding: 20px 40px; border-bottom: 1px solid #f0f0f0;">
+                <h3 style="margin: 0; font-weight: 600; color: #333;">Kişisel Bilgiler</h3>
+                <small style="color: #888;">Profil bilgilerinizi buradan güncelleyebilirsiniz.</small>
+            </div>
+
+            <div style="padding: 40px; overflow-y: auto; height: 100%;">
+                
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                  {% if messages %}
+                    {% for category, message in messages %}
+                      <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                  {% endif %}
+                {% endwith %}
+
+                <form action="{{ url_for('profile') }}" method="POST" style="max-width: 600px;">
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Ad:</label>
+                                <input type="text" name="first_name" value="{{ user.first_name }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Soyad:</label>
+                                <input type="text" name="last_name" value="{{ user.last_name }}" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>E-posta:</label>
+                        <input type="email" name="email" value="{{ user.email }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Telefon:</label>
+                        <input type="tel" name="phone" value="{{ user.phone or '' }}" placeholder="05XX XXX XX XX">
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Doğum Tarihi:</label>
+                                <input type="date" name="birth_date" value="{{ user.birth_date }}">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Cinsiyet:</label>
+                                <div class="gender-options">
+                                    <label class="radio-label">
+                                        <input type="radio" name="gender" value="male" {% if user.gender == 'male' %}checked{% endif %}>
+                                        <span class="custom-radio-btn"><i class="fas fa-mars"></i> Erkek</span>
+                                    </label>
+                                    <label class="radio-label">
+                                        <input type="radio" name="gender" value="female" {% if user.gender == 'female' %}checked{% endif %}>
+                                        <span class="custom-radio-btn"><i class="fas fa-venus"></i> Kadın</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <button type="submit" class="save-btn">
+                        <i class="fas fa-save"></i> Değişiklikleri Kaydet
+                    </button>
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

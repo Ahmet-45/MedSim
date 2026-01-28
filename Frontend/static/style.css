@@ -24,6 +24,69 @@ body {
     width: 300px;
     background-color: #ffffff;
     border-right: 1px solid #f0f0f0;
+
+    display: flex;
+    flex-direction: column;
+    padding: 30px 20px;
+    height: 100%;
+}
+
+.sidebar-logo{
+    margin-bottom: 20px;    
+}
+
+.sidebar-profile-card {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    background-color: #f8f9fa;
+    border-radius: 16px;
+    border: 1px solid #e0e0e0;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.sidebar-profile-card:hover {
+    background-color: #fff;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    transform: translate(-2px);
+    border-color: #667eea;
+    text-decoration: none;
+}
+
+.sidebar-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    margin-right: 12px;
+}
+
+.sidebar-profile-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.doctor-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 0.95rem;
+}
+
+.profile-action {
+    font-size: 0.75rem;
+    color: #888;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.sidebar-profile-card:hover .profile-action {
+    color: #667eea; /* Hover olunca yazı mavileşsin */
 }
 
 /* LOGO AYARI */
@@ -210,4 +273,167 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+/* =========================================
+   SADECE PROFIL SAYFASI STİLLERİ (GÜNCEL - LIGHT THEME)
+   (Scoped Styles for #profile-page-body)
+   ========================================= */
+
+/* Sayfa Arka Planı - Ana tema ile uyumlu */
+#profile-page-body {
+    background-color: #eef2f6; /* Siyah yerine senin açık gri-mavi rengin */
+    color: #333; /* Yazılar artık koyu renk */
+    min-height: 100vh; /* Sayfa boyunu garantiye al */
+    overflow-y: auto !important;
+    height: auto !important;
+}
+
+/* Container'ı bir "Kart" gibi yapalım (Main-card mantığı) */
+#profile-page-body .container {
+    max-width: 550px;
+    margin-top: 50px;
+    padding: 40px;
+    background-color: #ffffff; /* Beyaz kart zemini */
+    border-radius: 24px; /* Senin genel border-radius ayarın */
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05); /* Hafif gölge */
+    border: 1px solid #e0e0e0;
+}
+
+#profile-page-body h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    font-weight: 600;
+    color: #444;
+}
+
+/* Input Grupları */
+#profile-page-body .form-group {
+    margin-bottom: 25px;
+}
+
+#profile-page-body label {
+    display: block;
+    margin-bottom: 8px;
+    color: #666; /* Etiket rengi yumuşatıldı */
+    font-weight: 500;
+}
+
+/* Input Alanları - Ferah Stil */
+#profile-page-body input[type="text"],
+#profile-page-body input[type="email"],
+#profile-page-body input[type="date"],
+#profile-page-body input[type="tel"],
+#profile-page-body select {
+    background-color: #f8f9fa; /* Çok açık gri zemin */
+    border: 1px solid #e0e0e0; /* İnce gri çerçeve */
+    color: #333; /* İçindeki yazı koyu */
+    border-radius: 12px;
+    width: 100%;
+    padding: 14px;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+/* Focus olunca senin MAVİ rengin parlasın */
+#profile-page-body input:focus {
+    background-color: #fff;
+    border-color: #667eea; /* Senin tema mavisi */
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Avatar Kısmı */
+#profile-page-body .avatar-section {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 30px auto;
+}
+
+#profile-page-body .profile-pic {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #fff; /* Resim etrafına beyaz çerçeve */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1); /* Resme derinlik kat */
+}
+
+#profile-page-body .edit-icon {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* Senin gradyanın */
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: 3px solid #ffffff; /* Siyah yerine beyaz çerçeve */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: transform 0.2s;
+}
+
+#profile-page-body .edit-icon:hover {
+    transform: scale(1.1);
+}
+
+/* Radio Button Hack (Light Theme Version) */
+#profile-page-body .gender-options {
+    display: flex;
+    gap: 15px;
+}
+
+#profile-page-body .radio-label {
+    flex: 1;
+    cursor: pointer;
+    margin: 0;
+}
+
+#profile-page-body .radio-label input[type="radio"] {
+    display: none;
+}
+
+#profile-page-body .custom-radio-btn {
+    display: block;
+    padding: 12px;
+    text-align: center;
+    border: 1px solid #e0e0e0;
+    background-color: #f8f9fa;
+    border-radius: 12px;
+    color: #666;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+/* Seçilince senin Gradyan Rengin gelsin */
+#profile-page-body .radio-label input[type="radio"]:checked + .custom-radio-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 4px 10px rgba(118, 75, 162, 0.3);
+}
+
+/* Kaydet Butonu - Modern Stil */
+#profile-page-body .save-btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* Ana tema butonu */
+    color: white;
+    border: none;
+    border-radius: 16px;
+    font-weight: 600;
+    font-size: 1.05rem;
+    cursor: pointer;
+    margin-top: 10px;
+    box-shadow: 0 4px 15px rgba(118, 75, 162, 0.3);
+    transition: all 0.3s ease;
+}
+
+#profile-page-body .save-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(118, 75, 162, 0.4);
 }

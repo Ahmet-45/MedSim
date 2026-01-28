@@ -1,0 +1,83 @@
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kayıt Ol</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='auth-style.css') }}">
+  <style>
+    .flash-error {
+      color: red;
+      margin-bottom: 10px;
+      font-size: 0.9rem;
+    }
+    .flash-success {
+      color: green;
+      margin-bottom: 10px;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-card" style="margin-top: 50px;">
+        <div class="logo-circle"><img src="{{ url_for('static', filename='MedSim_Amblem.png') }}" alt="Logo Yüklenemedi" style="width: 400px; height: 400px;"></div>
+        <div class="brand-title">MedSim</div>
+        <p class="page-subtitle">Yeni Doktor Hesabı Oluştur</p>  
+
+        <form method="POST">
+            <div class="form-group" style="display: flex; gap: 10px;">
+                <input type="text" name="first_name" placeholder="Ad" required style="flex:1;">
+                <input type="text" name="last_name" placeholder="Soyad" required style="flex:1;">
+            </div>
+
+            <div class="form-group">
+                <input type="text" name="username" placeholder="Kullanıcı Adı" required>
+            </div>
+            <div class="form-group">
+                <input type="email" name="email" placeholder="E-Posta Adresi" required>
+            </div>
+
+            <div class="form-group" style="display: flex; gap: 10px;">
+                <input type="tel" name="phone" placeholder="Telefon (5XX...)" required style="flex:2;">
+                
+                <select name="gender" required style="flex:1; padding: 14px; border-radius: 30px; border: 1px solid #dfe6e9; background-color: #fafafa; color: #333;">
+                    <option value="" disabled selected>Cinsiyet</option>
+                    <option value="Kadin">Kadın</option>
+                    <option value="Erkek">Erkek</option>
+                </select>
+            </div>
+
+            <div class="form-group password-wrapper">
+                <input type="password" name="password" placeholder="Şifre" required>
+                <span class="toggle-password" onclick="togglePassword('pass1', this)">🙈</span>
+            </div>
+            <div class="form-group password-wrapper">
+                <input type="password" name="confirm_password" id="pass2" placeholder="Şifre (Tekrar)" required>
+                <span class="toggle-password" onclick="togglePassword('pass2', this)">🙈</span>
+            </div>
+
+            <button type="submit" class="btn-primary">Doktor Kaydını Tamamla</button>
+        </form>
+
+        <div class="auth-links" style="justify-content: center;">
+            <span style="color: #636e72; margin-right: 5px;">Zaten hesabın var mı?</span>
+            <a href="{{ url_for('login') }}">Giriş Yap</a>
+        </div>
+    </div>
+
+    <script>
+        function togglePassword(inputId, icon) {
+            var input = document.getElementById(inputId);
+            if (input.type === "password") {
+                input.type = "text";
+                icon.textContent = "👁️"; // İkonu değiştir (Maymun kapat)
+            } else {
+                input.type = "password";
+                icon.textContent = "🙈"; // İkonu değiştir (Göz aç)
+            }
+        }
+    </script>
+</body>
+</html>
