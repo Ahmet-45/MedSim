@@ -1,0 +1,50 @@
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sidebar</title>
+</head>
+<body>
+  <div class="sidebar" style="text-align: center; display: flex; flex-direction: column; height: 100%; padding: 20px;">
+    
+    <div class="sidebar-avatar-container" style="margin-bottom: 20px;">
+        <img src="{{url_for('static', filename='ben.jpg') }}" 
+             alt="Profil" 
+             style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #eef2f6;">
+        <h5 style="margin-top: 15px; font-weight: 600; color: #333;">Dr. {{ user.last_name }}</h5>
+    </div>
+
+    <hr style="width: 100%; border-top: 1px solid #f0f0f0; margin-bottom: 20px;">
+
+    <a href="{{ url_for('dashboard') }}" 
+       class="btn-modern sidebar-btn {% if request.endpoint == 'dashboard' %}active-btn{% endif %}">
+        <i class="fas fa-home"></i> Ana Sayfa
+    </a>
+
+    <a href="{{ url_for('profile') }}" 
+       class="btn-modern sidebar-btn {% if request.endpoint == 'profile' %}active-btn{% endif %}">
+        <i class="fas fa-id-card"></i> Genel Bilgiler
+    </a>
+
+    <a href="{{ url_for('statistics') }}" 
+       class="btn-modern sidebar-btn {% if request.endpoint == 'statistics' %}active-btn{% endif %}">
+        <i class="fas fa-chart-line"></i> İstatistikler
+    </a>
+
+    <a href="{{ url_for('contact') }}" 
+       class="btn-modern sidebar-btn {% if request.endpoint == 'contact' %}active-btn{% endif %}">
+        <i class="fas fa-headset"></i> İletişim
+    </a>
+
+    <a href="{{ url_for('settings') }}" 
+       class="btn-modern sidebar-btn {% if request.endpoint == 'settings' %}active-btn{% endif %}">
+        <i class="fas fa-cog"></i> Ayarlar
+    </a>
+
+    <a href="{{ url_for('logout') }}" class="btn-modern sidebar-btn" style="margin-top: auto; background: #ffebeb; color: #ff6b6b; border: none;">
+        <i class="fas fa-sign-out-alt"></i> Çıkış Yap
+    </a>
+
+</div>
+</body>
+</html>

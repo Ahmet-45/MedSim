@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedSim - İletişim</title>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body id="profile-page-body"> 
+
+    <div class="main-card">
+        
+        {% include 'sidebar.html' %} 
+
+        <div class="chat-section" style="background-color: #fff;">
+            
+            <div style="padding: 20px 40px; border-bottom: 1px solid #f0f0f0;">
+                <h3 style="margin: 0; font-weight: 600; color: #333;">İletişim ve Destek</h3>
+                <small style="color: #888;">Teknik bir sorun mu var? Bize yazın.</small>
+            </div>
+
+            <div style="padding: 40px; overflow-y: auto; height: 100%;">
+                
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                  {% if messages %}
+                    {% for category, message in messages %}
+                      <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                  {% endif %}
+                {% endwith %}
+
+                <div class="row">
+                    
+                    <div class="col-md-7">
+                        <form action="{{ url_for('contact') }}" method="POST">
+                            
+                            <div class="form-group">
+                                <label>Gönderen:</label>
+                                <div style="position: relative;">
+                                    <i class="fas fa-lock" style="position: absolute; left: 15px; top: 15px; color: #aaa;"></i>
+                                    <input type="text" value="{{ user.first_name }} {{ user.last_name }} ({{ user.email }})" disabled 
+                                           style="padding-left: 45px; background-color: #f1f3f5; border: 1px solid #e0e0e0; color: #666; width: 100%; padding: 12px 12px 12px 45px; border-radius: 12px; font-size: 0.9rem;">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Konu:</label>
+                                <input type="text" name="subject" placeholder="Örn: Simülasyon Hatası" required 
+                                       style="background-color: #f8f9fa; border: 1px solid #e0e0e0; color: #333; width: 100%; padding: 12px; border-radius: 12px;">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Mesajınız:</label>
+                                <textarea name="message" rows="6" placeholder="Sorunu detaylıca açıklayınız..." required
+                                          style="background-color: #f8f9fa; border: 1px solid #e0e0e0; color: #333; width: 100%; padding: 12px; border-radius: 12px; resize: none;"></textarea>
+                            </div>
+
+                            <button type="submit" class="save-btn" style="width: auto; padding: 15px 40px;">
+                                <i class="fas fa-paper-plane"></i> Gönder
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="col-md-5"> 
+                        <div style="background: #f8f9fa; padding: 30px; border-radius: 20px; border: 1px solid #eef2f6; height: 100%;">
+                            
+                            <h5 style="font-weight: 700; margin-bottom: 30px; color: #333; display: flex; align-items: center;">
+                                <i class="fas fa-headset" style="margin-right: 10px; color: #667eea;"></i>
+                                İletişim Kanalları
+                            </h5>
+                            
+                            <div style="background: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e0e0e0; display: flex; align-items: center;">
+                                <div style="background: #eef2f6; width: 50px; height: 50px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-right: 15px; flex-shrink: 0;">
+                                    <i class="fas fa-envelope" style="color: #667eea; font-size: 1.2rem;"></i>
+                                </div>
+                                <div style="overflow: hidden;"> <small style="color: #888; font-weight: 500; display: block;">Destek E-Posta</small>
+                                    <span style="color: #333; font-weight: 600; display: block; overflow-wrap: break-word;">medsimdev@gmail.com</span>
+                                </div>
+                            </div>
+
+                            <div style="background: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e0e0e0; display: flex; align-items: center;">
+                                <div style="background: #fff4e6; width: 50px; height: 50px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-right: 15px; flex-shrink: 0;">
+                                    <i class="fas fa-phone" style="color: #ff9f43; font-size: 1.2rem;"></i>
+                                </div>
+                                <div>
+                                    <small style="color: #888; font-weight: 500; display: block;">Acil Destek</small>
+                                    <span style="color: #333; font-weight: 600;">+90 (555) 000 00 00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div> </div>
+        </div>
+    </div>
+
+</body>
+</html>

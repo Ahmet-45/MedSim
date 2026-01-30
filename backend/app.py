@@ -9,6 +9,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import google.generativeai as genai
 from dotenv import load_dotenv
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from flask_mail import Mail, Message
+from werkzeug.security import generate_password_hash, check_password_hash
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -17,6 +19,15 @@ FRONTEND_DIR = os.path.join(BASE_DIR, '..', 'Frontend')
 app = Flask(__name__,
             template_folder= os.path.join(FRONTEND_DIR, 'templates'),
             static_folder= os.path.join(FRONTEND_DIR, 'static'))
+
+# --- MAIL AYARLARI ---
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'medsimdev@gmail.com'
+app.config['MAIL_PASSWORD'] = 'othaxonqwfjfjyrv'  # Uygulama şifresi kullanın
+
+mail = Mail(app)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -311,6 +322,117 @@ def profile():
     
     return render_template('profile.html', user=current_user)
 
+@app.route('/statistics')
+@login_required
+def statistics():
+    return render_template('statistics.html', user=current_user)
+
+@app.route('/contact', methods=['GET', 'POST'])
+@login_required
+def contact():
+    if request.method == 'POST':
+        konu = request.form.get('subject')
+        mesaj_icerigi = request.form.get('message')
+
+        #Gönderen bilgileri
+        gonderen_isim = f"{current_user.first_name} {current_user.last_name}"
+        gonderen_mail = current_user.email
+
+        # --- MAIL GONDERME ISLEMI ---
+        try:
+            # Mesajı Hazırla
+            msg = Message(
+                subject=f"Medsim İletişim Formu: {konu}",
+                sender=app.config['MAIL_USERNAME'],
+                recipients=['medsimdev@gmail.com'],
+                reply_to=gonderen_mail
+            )
+
+            # 2. Mesaj İçeriği
+            msg.body = f"""
+            Merhaba Medsim Ekibi,
+
+            Medsim uygulamasındaki iletişim formu aracılığıyla yeni bir mesaj aldınız.
+
+            -------------------------------------
+            Gönderen: {gonderen_isim}
+            E-posta: {gonderen_mail}
+            -------------------------------------
+            Konu: {konu}
+
+            Mesaj:
+            {mesaj_icerigi}
+            """
+
+            # Maili Gönder
+            mail.send(msg)
+
+            flash('Mesajınız başarıyla iletildi! En kısa sürede mail üzerinden dönüş yapacağız. ✅', 'success')
+
+        except Exception as e:
+            print(f"Mail gönderme hatası: {e}")
+            flash('Mesaj gönderilirken bir hata oluştu. Lütfen daha sonra tekrar deneyiniz.', 'error')
+
+        return redirect(url_for('contact'))
+
+    return render_template('contact.html', user=current_user)
+
+@app.route('/settings', methods=['GET', 'POST'])
+@login_required
+def settings():
+    if request.method == 'POST':
+        
+        # Şifre değişikliği
+        if 'btn_password' in request.form:
+            eski_sifre = request.form.get('old_password')
+            yeni_sifre = request.form.get('new_password')
+            yeni_sifre_tekrar = request.form.get('confirm_new_password')
+
+            # Eski şifre doğru mu?
+            if not check_password_hash(current_user.password, eski_sifre):
+                flash('Mevcut şifreniz yanlış.', 'error')
+            elif yeni_sifre != yeni_sifre_tekrar:
+                flash('Yeni şifreler birbiriyle uyuşmuyor.', 'error')
+            else:
+                current_user.password = generate_password_hash(yeni_sifre, method='pbkdf2:sha256')
+                try:
+                    db.session.commit()
+                    flash('Şifreniz başarıyla güncellendi! ✅', 'success')
+                except:
+                    db.session.rollback()
+                    flash('Bir hata oluştu, şifre değiştirilemedi.', 'error')
+
+        elif 'btn_reset_stats' in request.form:
+            # İstatistikleri sıfırla
+            try:
+                current_user.total_cases = 0
+                current_user.correct_count = 0
+                current_user.wrong_count = 0
+                db.session.commit()
+                flash('İstatistikler başarıyla sıfırlandı! ✅', 'success')
+            except:
+                db.session.rollback()
+                flash('Bir hata oluştu, istatistikler sıfırlanamadı.', 'error')
+        elif 'btn_delete_account' in request.form:
+            try:
+                user_silinecek = current_user
+                logout_user()
+                db.session.delete(user_silinecek)
+                db.session.commit()
+                flash('Hesabınız başarıyla silindi. Üzgünüz sizi kaybettiğimize! ✅', 'success')
+                return redirect(url_for('login'))
+            except Exception as e:
+                print(f"Hesap silme hatası: {e}")
+                db.session.rollback()
+                flash('Bir hata oluştu, hesap silinemedi.', 'error')
+
+        return redirect(url_for('settings'))
+    return render_template('settings.html', user=current_user)
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
 
 @app.route('/chat', methods=['POST'])
 def chat():

@@ -437,3 +437,39 @@ body {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(118, 75, 162, 0.4);
 }
+
+/* --- SIDEBAR BUTONLARI --- */
+.sidebar-btn {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 12px 20px;
+    margin-bottom: 10px;
+    width: 100%;
+    background: transparent; /* Arkası şeffaf */
+    color: #666; /* Yazı gri */
+    border: none;
+    box-shadow: none; /* Gölge yok */
+    border-radius: 12px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    text-decoration: none !important; /* Alt çizgi olmasın */
+}
+
+.sidebar-btn i {
+    width: 25px; /* İkon genişliği sabit olsun ki yazılar hizalı dursun */
+    margin-right: 10px;
+}
+
+.sidebar-btn:hover {
+    background-color: #f8f9fa;
+    color: #667eea;
+    transform: translateX(5px); /* Hafif sağa kaysın */
+}
+
+/* --- AKTİF BUTON (Seçili Sayfa) --- */
+.active-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white !important;
+    box-shadow: 0 4px 15px rgba(118, 75, 162, 0.3);
+}

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedSim - Ayarlar</title>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        /* Sadece bu sayfaya özel birkaç stil */
+        .settings-card {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        .section-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+        .section-title i {
+            margin-right: 10px;
+            color: #667eea;
+        }
+        .danger-zone {
+            border: 1px solid #ffcccc;
+            background: #fff5f5;
+        }
+        .danger-title i {
+            color: #ff6b6b;
+        }
+    </style>
+</head>
+
+<body id="profile-page-body"> 
+
+    <div class="main-card">
+        
+        {% include 'sidebar.html' %} 
+
+        <div class="chat-section" style="background-color: #f8f9fa;">
+            
+            <div style="padding: 20px 40px; background: #fff; border-bottom: 1px solid #f0f0f0;">
+                <h3 style="margin: 0; font-weight: 600; color: #333;">Ayarlar</h3>
+                <small style="color: #888;">Hesap güvenliği ve tercihlerinizi yönetin.</small>
+            </div>
+
+            <div style="padding: 40px; overflow-y: auto; height: 100%;">
+                
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                  {% if messages %}
+                    {% for category, message in messages %}
+                      <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                  {% endif %}
+                {% endwith %}
+
+                <div class="settings-card">
+                    <h5 class="section-title"><i class="fas fa-lock"></i> Şifre Değiştir</h5>
+                    <form action="{{ url_for('settings') }}" method="POST">
+                        
+                        <div class="form-group">
+                            <label>Mevcut Şifre</label>
+                            <div style="position: relative;">
+                                <input type="password" name="old_password" id="oldPass" class="form-control" required style="border-radius: 10px; padding-right: 40px;">
+                                <i class="fas fa-eye" id="iconOld" onclick="sifreGosterGizle('oldPass', 'iconOld')" 
+                                  style="position: absolute; right: 15px; top: 12px; cursor: pointer; color: #aaa;"></i>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Yeni Şifre</label>
+                                    <div style="position: relative;">
+                                        <input type="password" name="new_password" id="newPass" class="form-control" required style="border-radius: 10px; padding-right: 40px;">
+                                        <i class="fas fa-eye" id="iconNew" onclick="sifreGosterGizle('newPass', 'iconNew')" 
+                                          style="position: absolute; right: 15px; top: 12px; cursor: pointer; color: #aaa;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Yeni Şifre (Tekrar)</label>
+                                    <div style="position: relative;">
+                                        <input type="password" name="confirm_password" id="confirmPass" class="form-control" required style="border-radius: 10px; padding-right: 40px;">
+                                        <i class="fas fa-eye" id="iconConfirm" onclick="sifreGosterGizle('confirmPass', 'iconConfirm')" 
+                                          style="position: absolute; right: 15px; top: 12px; cursor: pointer; color: #aaa;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" name="btn_password" class="save-btn" style="width: auto; padding: 10px 30px;">
+                            Güncelle
+                        </button>
+                    </form>
+                </div>
+
+                <div class="settings-card">
+                    <h5 class="section-title"><i class="fas fa-chart-pie"></i> Simülasyon Verilerini Sıfırla</h5>
+                    <p style="color: #666; font-size: 0.9rem;">
+                        Bugüne kadar çözdüğünüz tüm vaka analizleri, doğru/yanlış sayılarınız silinecek ve puanınız 0'lanacaktır. 
+                        Bu işlem geri alınamaz.
+                    </p>
+                    <form action="{{ url_for('settings') }}" method="POST">
+                        <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#resetModal" 
+                        style="color: #fff; border-radius: 10px; font-weight: 500;">
+                        <i class="fas fa-redo"></i> İstatistikleri Sıfırla
+                        </button>
+                    </form>
+                </div>
+
+                <div class="settings-card danger-zone">
+                    <h5 class="section-title danger-title"><i class="fas fa-exclamation-triangle"></i> Tehlikeli Bölge</h5>
+                    <p style="color: #d63031; font-size: 0.9rem;">
+                        Hesabınızı silerseniz tüm verileriniz, profilleriniz ve geçmişiniz kalıcı olarak yok edilir.
+                        Bunu gerçekten yapmak istiyor musunuz?
+                    </p>
+                    <form action="{{ url_for('settings') }}" method="POST">
+                        <button type="button" class="btn btn-danger"    data-toggle="modal" data-target="#deleteModal" 
+                        style="border-radius: 10px; font-weight: 500;">
+                        <i class="fas fa-trash-alt"></i> Hesabımı Kalıcı Olarak Sil
+                        </button>                       
+                    </form>
+                </div>
+
+                <br><br> </div>
+        </div>
+    </div>
+    <div class="modal fade" id="resetModal" tabindex="-1" role="dialog" aria-labelledby="resetModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                <div class="modal-header" style="border-bottom: none; padding-bottom: 0;">
+                    <h5 class="modal-title" id="resetModalLabel" style="font-weight: 600; color: #ff9f43;">
+                        <i class="fas fa-exclamation-circle"></i> Emin misin?
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" style="color: #555;">
+                    Tüm simülasyon geçmişin, puanların ve istatistiklerin <b>kalıcı olarak</b> silinecek. Bu işlem geri alınamaz!
+                </div>
+                <div class="modal-footer" style="border-top: none;">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" style="border-radius: 10px;">Vazgeç</button>
+                    
+                    <form action="{{ url_for('settings') }}" method="POST">
+                        <button type="submit" name="btn_reset" class="btn btn-warning" style="color: white; border-radius: 10px; font-weight: 500;">
+                            Evet, Sıfırla
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(255, 0, 0, 0.1);">
+                <div class="modal-header" style="border-bottom: none; padding-bottom: 0;">
+                    <h5 class="modal-title" id="deleteModalLabel" style="font-weight: 600; color: #ff6b6b;">
+                        <i class="fas fa-trash-alt"></i> Hesabı Sil
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" style="color: #555;">
+                    <p>MedSim hesabını silmek üzeresin. Bu işlem sonucunda:</p>
+                    <ul style="font-size: 0.9rem; color: #d63031;">
+                        <li>Tüm profil bilgilerin silinecek.</li>
+                        <li>Geçmiş simülasyon verilerin kaybolacak.</li>
+                        <li>Bu hesaba bir daha erişemeyeceksin.</li>
+                    </ul>
+                    <p>Gerçekten devam etmek istiyor musun?</p>
+                </div>
+                <div class="modal-footer" style="border-top: none;">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" style="border-radius: 10px;">İptal Et</button>
+                    
+                    <form action="{{ url_for('settings') }}" method="POST">
+                        <button type="submit" name="btn_delete" class="btn btn-danger" style="border-radius: 10px; font-weight: 500;">
+                            Elveda, Hesabımı Sil 😔
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>  
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>  
+<script>
+    // Şifre Göster/Gizle Fonksiyonu
+    function sifreGosterGizle(inputId, iconId) {
+        var input = document.getElementById(inputId);
+        var icon = document.getElementById(iconId);
+
+        if (input.type === "password") {
+            input.type = "text"; // Şifreyi göster
+            icon.classList.remove("fa-eye");
+            icon.classList.add("fa-eye-slash"); // İkonu 'çizgili göz' yap
+        } else {
+            input.type = "password"; // Şifreyi gizle
+            icon.classList.remove("fa-eye-slash");
+            icon.classList.add("fa-eye"); // İkonu normal göz yap
+        }
+    }
+</script> 
+</body>
+</html>
