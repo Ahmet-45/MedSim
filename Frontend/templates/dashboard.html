@@ -10,10 +10,56 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        /* Panel Animasyonları */
+        #lab-panel {
+            display: none; 
+            border-left: 1px solid #e0e0e0;
+            background-color: #fcfcfc;
+            transition: all 0.3s ease;
+            height: 100%;
+            overflow-y: auto;
+        }
+        
+        #chat-column {
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .content-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Yeni Eklenen: Sonuçları Göster Butonu (Başlangıçta gizli) */
+        #btn-show-results {
+            display: none;
+            background-color: #fff;
+            color: #ff9f43;
+            border: 2px solid #ff9f43;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        #btn-show-results:hover {
+            background-color: #ff9f43;
+            color: white;
+        }
+    </style>
 </head>
 <body>
 
-    <div class="main-card">
+    <div class="main-card" style="height: 100vh; overflow: hidden;">
+        
         <div class="sidebar">
             <img src="{{ url_for('static', filename='MedSim_Logo.png') }}" alt="MedSim Logo" class="sidebar-logo">
             
@@ -24,7 +70,7 @@
             </button>
             
             <button onclick="tahlilIste()" class="btn-modern" style="background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); box-shadow: 0 4px 15px rgba(253, 160, 133, 0.3);">
-                <i class="fas fa-file-medical" style="margin-right: 10px;"></i> TAHLİL İSTE
+                <i class="fas fa-file-medical" style="margin-right: 10px;"></i> TAHLİL
             </button>
             <a href="{{ url_for('profile') }}" class="sidebar-profile-card">
                 <img src="{{ user.avatar_url or url_for('static', filename='ben.jpg') }}" alt="Profil" class="sidebar-avatar">
@@ -34,52 +80,128 @@
                     <span class="profile-action">Profili Düzenle <i class="fas fa-chevron-right"></i></span>
                 </div>
             </a>
-            
         </div>
-
-        <div class="chat-section">
-            <div style="padding: 20px 30px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <h5 style="margin: 0; font-weight: 600; color: #333;">Poliklinik Simülasyonu</h5>
-                    <small style="color: #28a745;"><i class="fas fa-circle" style="font-size: 8px;"></i> Sistem Aktif</small>
-                </div>
-                <i class="fas fa-stethoscope" style="font-size: 1.5rem; color: #e0e0e0;"></i>
-            </div>
-
-            <div id="sohbet-kutusu">
-                <div class="mesaj doktor">
-                    <i class="fas fa-robot" style="color: #667eea; margin-right: 5px;"></i>
-                    <b>Asistan:</b> Hoş geldiniz Dr. {{ user.last_name }}. Görüşmeye başlamak için "Yeni Hasta" butonuna basınız.
-                </div>
-            </div>
-
-            <div style="padding: 20px 30px; border-top: 1px solid #f0f0f0; display: flex; gap: 10px; background: white;">
-                <input type="text" id="user-input" placeholder="Hastaya sorunuzu yazın..." onkeypress="handleEnter(event)" 
-                       style="flex: 1; padding: 15px; border: 2px solid #f0f0f0; border-radius: 16px; outline: none; transition: 0.3s;">
+        <div class="content-wrapper">
+            <div class="row no-gutters" style="height: 100%;">
                 
-                <button onclick="sendMessage()" class="btn-modern" style="width: 60px; margin: 0; border-radius: 16px;">
-                    <i class="fas fa-paper-plane"></i>
-                </button>
+                <div class="col-md-12" id="chat-column">
+                    
+                    <div style="padding: 20px 30px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; background: #fff;">
+                        <div>
+                            <h5 style="margin: 0; font-weight: 600; color: #333;">Poliklinik Simülasyonu</h5>
+                            <small style="color: #28a745;"><i class="fas fa-circle" style="font-size: 8px;"></i> Sistem Aktif</small>
+                        </div>
+
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <button id="btn-show-results" onclick="paneliAc()">
+                                <i class="fas fa-clipboard-list"></i> Sonuçları Göster
+                            </button>
+                            
+                            <i class="fas fa-stethoscope" style="font-size: 1.5rem; color: #e0e0e0;"></i>
+                        </div>
+                    </div>
+
+                    <div id="sohbet-kutusu" style="flex: 1; overflow-y: auto; padding: 20px; background-color: #fff;">
+                        <div class="mesaj doktor">
+                            <i class="fas fa-robot" style="color: #667eea; margin-right: 5px;"></i>
+                            <b>Asistan:</b> Hoş geldiniz Dr. {{ user.last_name }}. Görüşmeye başlamak için "Yeni Hasta" butonuna basınız.
+                        </div>
+                    </div>
+
+                    <div style="padding: 20px 30px; border-top: 1px solid #f0f0f0; display: flex; gap: 10px; background: white;">
+                        <input type="text" id="user-input" placeholder="Hastaya sorunuzu yazın..." onkeypress="handleEnter(event)" 
+                               style="flex: 1; padding: 15px; border: 2px solid #f0f0f0; border-radius: 16px; outline: none; transition: 0.3s;">
+                        
+                        <button onclick="sendMessage()" class="btn-modern" style="width: 60px; margin: 0; border-radius: 16px;">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="col-md-4" id="lab-panel">
+                    <div style="display: flex; flex-direction: column; height: 100%;">
+                        <div style="padding: 15px; background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); color: white; display: flex; justify-content: space-between; align-items: center;">
+                            <h6 style="margin: 0; font-weight: 600;"><i class="fas fa-microscope"></i> Laboratuvar Sonuçları</h6>
+                            
+                            <button onclick="paneliGizle()" style="background: transparent; border: none; color: white; cursor: pointer; font-size: 1.1rem;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        
+                        <div id="lab-content" style="padding: 20px; overflow-y: auto; flex: 1;">
+                            </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
 
     <script>
-        // Mesaj gelince aşağı kaydır
+        // GLOBAL DEĞİŞKEN: Tahlil verisi var mı kontrolü için
+        let labDataMevcut = false;
+
         function scrollToBottom() {
             const chatBox = document.getElementById("sohbet-kutusu");
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
         async function yeniHasta() {
-            document.getElementById("user-input").value = "Yeni Hasta Getir";
-            sendMessage();
+                document.getElementById("sohbet-kutusu").innerHTML = ""; // Sohbeti temizle
+                document.getElementById("user-input").value = "Yeni Hasta Getir";
+                labDataMevcut = false; // Veriyi sıfırla
+                document.getElementById('btn-show-results').style.display = 'none'; // Butonu gizle
+                paneliGizle(); // Paneli kapat
+                sendMessage();
+            
         }
 
         async function tahlilIste() {
+            if(labDataMevcut === true){
+                // Zaten veri varsa, paneli aç
+                paneliAc();
+                return;
+            }
+
             document.getElementById("user-input").value = "Kan tahlili istiyorum";
             sendMessage();
         }
+
+        // --- PANEL YÖNETİMİ ---
+        
+        // 1. Paneli Kapat (Minimize Et)
+        function paneliGizle() {
+            const labPanel = document.getElementById('lab-panel');
+            const chatColumn = document.getElementById('chat-column');
+            const btnShow = document.getElementById('btn-show-results');
+
+            // Paneli Gizle
+            labPanel.style.display = 'none';
+            chatColumn.classList.remove('col-md-8');
+            chatColumn.classList.add('col-md-12');
+
+            // Eğer içeride veri varsa, "Sonuçları Göster" butonunu aç
+            if (labDataMevcut) {
+                btnShow.style.display = 'block';
+            }
+        }
+
+        // 2. Paneli Aç (Restore Et)
+        function paneliAc() {
+            const labPanel = document.getElementById('lab-panel');
+            const chatColumn = document.getElementById('chat-column');
+            const btnShow = document.getElementById('btn-show-results');
+
+            // Paneli Göster
+            chatColumn.classList.remove('col-md-12');
+            chatColumn.classList.add('col-md-8');
+            labPanel.style.display = 'block';
+
+            // Butonu Gizle (Zaten panel açık)
+            btnShow.style.display = 'none';
+        }
+
+        // --- MESAJLAŞMA ---
 
         async function sendMessage() {
             const inputField = document.getElementById("user-input");
@@ -88,7 +210,6 @@
 
             if (message === "") return;
 
-            // 1. KULLANICI MESAJINI EKLE (Senin CSS class'ın: .mesaj .kullanici)
             chatBox.innerHTML += `
                 <div class="mesaj kullanici">
                     ${message}
@@ -98,8 +219,7 @@
             scrollToBottom();
 
             try {
-                // 2. Python'a Gönder
-                const response = await fetch('/chat', {
+                const response = await fetch('/chat', { // Veya senin rotan neyse
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message: message })
@@ -107,25 +227,30 @@
 
                 const data = await response.json();
 
-                // 3. HASTA CEVABINI EKLE (Senin CSS class'ın: .mesaj .doktor)
-                if (data.response) {
+                if (data.response || data.message) {
+                    let botMsg = data.response || data.message;
                     chatBox.innerHTML += `
                         <div class="mesaj doktor">
-                            <b>Hasta:</b> ${data.response}
+                            ${botMsg}
                         </div>`;
                 }
 
-                // 4. TABLO VARSA EKLE
-                if (data.table_html) {
-                    // Python'dan gelen basit tabloyu, senin CSS'indeki "custom-table" sınıfıyla değiştiriyoruz ki güzel görünsün
-                    let guzelTablo = data.table_html.replace('class="table', 'class="table custom-table');
+                // TAHLİL KONTROLÜ
+                if (data.has_lab_result === true || (data.table_html && data.table_html.length > 10)) {
                     
-                    chatBox.innerHTML += `
-                        <div class="mesaj doktor" style="width: 95%; max-width: 95%;">
-                            <div class="table-responsive">
-                                ${guzelTablo}
-                            </div>
-                        </div>`;
+                    labDataMevcut = true; // Veri geldiğini işaretle
+
+                    // İçeriği Doldur
+                    const labContent = document.getElementById('lab-content');
+                    let gelenVeri = data.lab_html || data.table_html;
+                    
+                    if(gelenVeri) {
+                         gelenVeri = gelenVeri.replace('class="table', 'class="table table-bordered table-hover custom-table');
+                         labContent.innerHTML = gelenVeri;
+                    }
+
+                    // Paneli Otomatik Aç
+                    paneliAc();
                 }
 
                 scrollToBottom();

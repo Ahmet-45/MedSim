@@ -439,60 +439,80 @@ def chat():
     global current_patient
     user_input = request.json.get('message', '').lower()
 
+    # --- KULLANICI CİNSİYET AYARI ---
     doktor_hitap = "Bey"
     if 'user_id' in session:
         user = User.query.get(session['user_id'])
         if user and user.gender == "Kadın":
             doktor_hitap = "Hanım"
-        print(f"DEBUG - User ID: {session.get('user_id')}")
-        print(f"DEBUG - User Gender: {user.gender if user else 'User bulunamadı'}")
-        print(f"DEBUG - Doktor Hitap: {doktor_hitap}")
-    else:
-        print("DEBUG - Session'da user_id yok!")        
-    
-    # 1. SENARYO: "YENİ HASTA" BUTONUNA BASILDI
-    # Veya kullanıcı açıkça "yeni hasta" yazdı
-    if "yeni hasta" in user_input:
-        ilk_mesaj = yeni_hasta_olustur(doktor_hitap)
-        return jsonify({"response": ilk_mesaj, "type": "text"})
+    # -----------------------------------------------
 
-    # 2. SENARYO: DOKTOR TAHLİL İSTEDİ (Ama hasta değişmeyecek!)
+    response_text = ""
+    table_html = None
+    has_lab_result = False # Paneli açmak için bayrak
+
+    # 1. SENARYO: "YENİ HASTA"
+    if "yeni hasta" in user_input:
+        
+        #Yeni hasta gelince eski hastanın tahlilini hafızadan siliyoruz!
+        session.pop('mevcut_tahlil', None) 
+        
+        ilk_mesaj = yeni_hasta_olustur(doktor_hitap)
+        
+        return jsonify({
+            "response": ilk_mesaj, 
+            "type": "text",
+            "has_lab_result": False # Yeni hastada panel kapalı
+        })
+
+    # 2. SENARYO: TAHLİL İSTEĞİ
     elif "tahlil" in user_input or "hemogram" in user_input or "kan ver" in user_input:
         
-        # Eğer ortada hasta yoksa uyar
         if current_patient["chat_session"] is None:
             return jsonify({"response": "Önce yeni bir hasta çağırmalısınız.", "type": "text"})
+
         
-        # Mevcut hastanın hastalığı neyse ona göre tablo üret
-        mevcut_hastalik = current_patient["hastalik"]
-        tablo_html = tahlil_tablosu_olustur(mevcut_hastalik)
+        # Önce hafızaya bak: Bu hasta için daha önce tablo üretilmiş mi?
+        if session.get('mevcut_tahlil'):
+            # EVET VAR: Eskisini getir, yenisini üretme
+            bot_reply = "Sonuçlar zaten ekranınızda mevcut hocam. Tekrar panele yansıtıyorum."
+            tablo_html = session['mevcut_tahlil']
+            has_lab_result = True
         
-        # Yapay zekaya da haber verelim ki tepki versin
-        try:
-            response = current_patient["chat_session"].send_message(
-                "Doktor kan tahlili istedi. Sonuçları sisteme girdim. Şimdi endişeli bir şekilde 'Sonuçlar nasıl doktor bey?' diye sor."
-            )
-            bot_reply = response.text.replace("\n", " ")
-        except:
-            bot_reply = "Sonuçlar çıktı hocam, buyurun."
+        else:
+            # HAYIR YOK: Yeni üret ve kaydet
+            mevcut_hastalik = current_patient["hastalik"]
+            tablo_html = tahlil_tablosu_olustur(mevcut_hastalik)
+            
+            # Hafızaya kaydet
+            session['mevcut_tahlil'] = tablo_html
+            has_lab_result = True
+
+            bot_reply = "<b>Asistan:</b> Kan alındı ve sonuçlar sisteme yüklendi hocam. Sağ panelden inceleyebilirsiniz."
 
         return jsonify({
             "response": bot_reply, 
             "type": "html", 
-            "table_html": tablo_html
+            "table_html": tablo_html,     # Tablo verisi
+            "has_lab_result": True        # Paneli aç komutu
         })
 
     # 3. SENARYO: NORMAL SOHBET
     else:
         if current_patient["chat_session"] is None:
-             # Hasta yoksa otomatik oluştur
             ilk_mesaj = yeni_hasta_olustur(doktor_hitap)
             return jsonify({"response": ilk_mesaj, "type": "text"})
             
         try:
             response = current_patient["chat_session"].send_message(user_input)
             bot_reply = response.text.replace("</blockquote>", "").replace("<blockquote>", "")
-            return jsonify({"response": bot_reply, "type": "text"})
+            
+            # Normal sohbette panel durumu değişmesin (False gönderiyoruz ama JS tarafı veri yoksa kapatmaz)
+            return jsonify({
+                "response": bot_reply, 
+                "type": "text",
+                "has_lab_result": False 
+            })
         except Exception as e:
             return jsonify({"response": "Hata: " + str(e), "type": "text"})
 
